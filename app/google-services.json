@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "630745011401",
+    "firebase_url": "https://anees-e94e3-default-rtdb.firebaseio.com",
+    "project_id": "anees-e94e3",
+    "storage_bucket": "anees-e94e3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:630745011401:android:9490475ccc7f55a967a918",
+        "android_client_info": {
+          "package_name": "com.example.anees"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "630745011401-3nv4t13lrg02macet4lv3u0b491hrdgh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhNsvlyu7s8D1gZtWfs_uiBjbUYCYwXXE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "630745011401-3nv4t13lrg02macet4lv3u0b491hrdgh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
