@@ -8,7 +8,11 @@
     android:layout_height="match_parent"
     android:background="#81CEC6"
     tools:context=".signup">
-
+<!--    <ScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        tools:layout_editor_absoluteX="0dp"-->
+<!--        tools:layout_editor_absoluteY="-127dp">-->
     <ImageView
         android:id="@+id/logo"
         android:layout_width="205dp"
@@ -242,4 +246,5 @@
             />
 
     </LinearLayout>
+<!--    </ScrollView>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

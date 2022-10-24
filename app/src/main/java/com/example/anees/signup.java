@@ -12,6 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,11 +29,13 @@ public class signup extends AppCompatActivity {
     userinfo userInfo;
     private FirebaseDatabase db;
     private DatabaseReference root;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signup);
+        mAuth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
         db = FirebaseDatabase.getInstance();
         root = db.getReference("Users");
@@ -39,6 +45,7 @@ public class signup extends AppCompatActivity {
         Email = (EditText) findViewById(R.id.emailedit);
         Password = (EditText) findViewById(R.id.passwordedit);
         Phone = (EditText) findViewById(R.id.phoneedit);
+        btnBack = (Button) findViewById(R.id.back);
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,9 +75,44 @@ public class signup extends AppCompatActivity {
                     email= email.substring(0 , index);
                 }
             }
+                registerUser(name, user, email, password, phone);
                 sendDataToFirebase(name, user, email, password, phone);
 
         }
+    }
+
+    private void registerUser(String name, String user, String email, String password, String phone) {
+        mAuth
+                .createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task)
+                    {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getApplicationContext(),
+                                            "Registration successful!",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+                            Intent intent
+                                    = new Intent(signup.this,
+                                    MainActivity.class);
+                            startActivity(intent);
+                        }
+                        else {
+
+                            // Registration failed
+                            Toast.makeText(
+                                            getApplicationContext(),
+                                            "Registration failed!!"
+                                                    + " Please try again later",
+                                            Toast.LENGTH_LONG)
+                                    .show();
+
+                            // hide the progress bar
+                        }
+                    }
+                });
     }
 
     private void sendDataToFirebase(String name,String User,String email,String Password,String Phone) {

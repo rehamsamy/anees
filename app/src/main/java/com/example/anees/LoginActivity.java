@@ -10,9 +10,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,18 +31,17 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private Button btnBack;
     private EditText  User, Password;
-    userinfo userInfo;
     private FirebaseDatabase db;
     private DatabaseReference root;
     private FirebaseAuth mAuth;
     LoginData loginData;
+     ProgressBar progressbar;
 
     @Override
     protected void onStart() {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-
         }
     }
 
@@ -53,10 +54,13 @@ public class LoginActivity extends AppCompatActivity {
         db = FirebaseDatabase.getInstance();
         db = FirebaseDatabase.getInstance();
         root = db.getReference("Users");
+        progressbar = findViewById(R.id.progressBar);
         btnLogin = (Button) findViewById(R.id.login);
         btnBack = (Button) findViewById(R.id.back);
-        User = (EditText) findViewById(R.id.useredit);
+        User = (EditText) findViewById(R.id.emailedit);
         Password = (EditText) findViewById(R.id.passwordedit);
+        Toast.makeText(LoginActivity.this, "you have been sign up successfully ", Toast.LENGTH_LONG).show();
+
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,49 +69,68 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String user = User.getText().toString();
+                String password = Password.getText().toString();
+                Log.d("TAG => ", user);
+
+                if ( TextUtils.isEmpty(user) || TextUtils.isEmpty(password)) {
+                    Toast.makeText(LoginActivity.this, "Please Fill in all the fields",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    if(user.contains(".")){
+                        int index=user.lastIndexOf(".");
+                        if(index>= 0){
+                            user= user.substring(0 , index);
+                        }
+                    }
+                    progressbar.setVisibility(View.VISIBLE);
+                    sendDataToFirebase( user,  password);
+
+                }
+
+            }
+        });
+
     }
 
 
 
-    public void sendToDB(View view) {
-        String user = User.getText().toString();
-        String password = Password.getText().toString();
-
-        if ( TextUtils.isEmpty(user) || TextUtils.isEmpty(password)) {
-            Toast.makeText(LoginActivity.this, "Please Fill in all the fields",
-                    Toast.LENGTH_SHORT).show();
-        } else {
-
-            sendDataToFirebase( user,  password);
-
-        }
-    }
-
-    private void sendDataToFirebase(String User,String Password) {
-        userInfo.setUserUser(User);
-        userInfo.setUserpassword(Password);
 
 
+     void sendDataToFirebase(String User,String Password) {
+      loginData.setPassword(Password);
+      loginData.setUser(User);
         mAuth.signInWithEmailAndPassword(User,Password )
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
+                            Toast.makeText(LoginActivity.this, "you have been sign up successfully ", Toast.LENGTH_LONG).show();
+                            progressbar.setVisibility(View.GONE);
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
                             Log.d("TAG", "signInWithEmail:success");
-                            Toast.makeText(LoginActivity.this, "you have been sign up successfully ", Toast.LENGTH_SHORT).show();
-
                             FirebaseUser user = mAuth.getCurrentUser();
 //                            updateUI(user);
                         } else {
-                            // If sign in fails, display a message to the user.
                             Log.w("TAG", "signInWithEmail:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+                            progressbar.setVisibility(View.GONE);
 
                         }
                     }
+                }).addOnFailureListener(this, new OnFailureListener() {
+
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("TAG eror ", e.toString());
+                    }
                 });
+        ;
 
 
     }
