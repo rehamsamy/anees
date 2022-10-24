@@ -8,10 +8,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -30,6 +33,7 @@ public class signup extends AppCompatActivity {
     private FirebaseDatabase db;
     private DatabaseReference root;
     private FirebaseAuth mAuth;
+    private static String TAG = signup.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +54,7 @@ public class signup extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(signup.this,HomeActivity.class);
+                Intent intent = new Intent(signup.this, HomeActivity.class);
                 startActivity(intent);
             }
         });
@@ -66,56 +70,29 @@ public class signup extends AppCompatActivity {
         String phone = Phone.getText().toString();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(user) || TextUtils.isEmpty(password) || TextUtils.isEmpty(phone)) {
-            Toast.makeText(signup.this, "Please Fill in all the fields",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(signup.this, "Please Fill in all the fields", Toast.LENGTH_SHORT).show();
+        } else if (!isValidEmail(email)) {
+            Toast.makeText(signup.this, "Please enter correct email", Toast.LENGTH_SHORT).show();
         } else {
-            if(email.contains(".")){
-                int index=email.lastIndexOf(".");
-                if(index>= 0){
-                    email= email.substring(0 , index);
-                }
-            }
-                registerUser(name, user, email, password, phone);
-                sendDataToFirebase(name, user, email, password, phone);
-
+            registerUser(email, password);
+            sendDataToFirebase(name, user, email, password, phone);
         }
     }
 
-    private void registerUser(String name, String user, String email, String password, String phone) {
-        mAuth
-                .createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task)
-                    {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(getApplicationContext(),
-                                            "Registration successful!",
-                                            Toast.LENGTH_LONG)
-                                    .show();
-                            Intent intent
-                                    = new Intent(signup.this,
-                                    MainActivity.class);
-                            startActivity(intent);
-                        }
-                        else {
-
-                            // Registration failed
-                            Toast.makeText(
-                                            getApplicationContext(),
-                                            "Registration failed!!"
-                                                    + " Please try again later",
-                                            Toast.LENGTH_LONG)
-                                    .show();
-
-                            // hide the progress bar
-                        }
-                    }
-                });
+    private void registerUser(String email, String password) {
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(signup.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                Log.e(TAG, "onComplete: " + task.getException());
+            }
+        });
     }
 
-    private void sendDataToFirebase(String name,String User,String email,String Password,String Phone) {
+    private void sendDataToFirebase(String name, String User, String email, String Password, String Phone) {
         userInfo.setUserName(name);
         userInfo.setUserUser(User);
         userInfo.setUserEmail(email);
@@ -125,19 +102,18 @@ public class signup extends AppCompatActivity {
         root.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                root.child(userInfo.getUserEmail()).setValue(userInfo);
-                // after adding this data we are showing toast message.
-                Toast.makeText(signup.this, "you have been sign up successfully ", Toast.LENGTH_SHORT).show();
+                root.setValue(userInfo);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // if the data is not added or it is cancelled then
-                // we are displaying a failure toast message.
+                Log.e(TAG, "onCancelled: " + error.getMessage());
                 Toast.makeText(signup.this, "Fail to add data " + error, Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-
+    public static boolean isValidEmail(CharSequence target) {
+        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
     }
 }
